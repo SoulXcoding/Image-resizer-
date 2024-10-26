@@ -1,0 +1,481 @@
+<html><head><base href="https://picmorph.domain/">
+<title>PicMorph: The Ultimate Image Resizer</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --secondary: #10b981;
+  --accent: #f43f5e;
+  --background: #f8fafc;
+  --text: #1e293b;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --border-radius: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+header h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+header p {
+  color: #64748b;
+  font-size: 1.2rem;
+}
+
+.canvas-container {
+  margin: 2rem auto;
+  max-width: 100%;
+  display: none;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.drag-area {
+  width: 100%;
+  height: 350px;
+  border: 3px dashed var(--primary);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  position: relative;
+  overflow: hidden;
+  gap: 1rem;
+}
+
+.drag-area:hover {
+  transform: scale(1.01);
+  border-color: var(--secondary);
+  box-shadow: var(--shadow-lg);
+}
+
+.drag-area.active {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.drag-area h3 {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.image-info {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease;
+}
+
+.image-info:hover {
+  transform: translateY(-2px);
+}
+
+.image-path {
+  word-break: break-all;
+  font-family: 'Fira Code', monospace;
+  padding: 0.75rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.control-group {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.control-group:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.control-group h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+input[type="number"], select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn {
+  padding: 0.9rem 1.8rem;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.upload-icon {
+  animation: bounce 2s infinite;
+  color: var(--primary);
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 4px;
+  accent-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .drag-area {
+    height: 250px;
+  }
+  
+  .controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Loading state */
+.loading {
+  position: relative;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
+</head>
+<body>
+<!-- Rest of the HTML remains exactly the same -->
+<div class="container">
+  <header>
+    <h1>PicMorph</h1>
+    <p>Transform your images with joy!</p>
+  </header>
+
+  <div class="drag-area" id="dropZone">
+    <svg class="upload-icon" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    <h3>Drag & Drop your image here</h3>
+    <p>or</p>
+    <button class="btn" id="browseBtn">Browse Files</button>
+    <input type="file" hidden id="fileInput" accept="image/*">
+  </div>
+
+  <div class="image-info" id="imageInfo" style="display: none;">
+    <h3>Image Information</h3>
+    <div>
+      <strong>File Name:</strong> <span id="fileName">No file selected</span>
+    </div>
+    <div>
+      <strong>File Path:</strong>
+      <div class="image-path" id="filePath">No path available</div>
+    </div>
+    <div>
+      <strong>File Size:</strong> <span id="fileSize">0 KB</span>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <h3>Dimensions</h3>
+      <input type="number" id="width" placeholder="Width">
+      <input type="number" id="height" placeholder="Height">
+      <label>
+        <input type="checkbox" id="lockAspectRatio" checked>
+        Lock Aspect Ratio
+      </label>
+    </div>
+
+    <div class="control-group">
+      <h3>Format</h3>
+      <select id="format">
+        <option value="png">PNG</option>
+        <option value="jpeg">JPEG</option>
+        <option value="webp">WebP</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn" id="downloadBtn">Download Image</button>
+</div>
+
+<script>
+// JavaScript remains exactly the same
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const browseBtn = document.getElementById('browseBtn');
+    const canvasContainer = document.querySelector('.canvas-container');
+    const canvasElement = document.getElementById('canvas');
+    const imageInfo = document.getElementById('imageInfo');
+    const fileName = document.getElementById('fileName');
+    const filePath = document.getElementById('filePath');
+    const fileSize = document.getElementById('fileSize');
+    
+    const canvas = new fabric.Canvas('canvas', {
+        backgroundColor: '#ffffff'
+    });
+    
+    let originalAspectRatio = 1;
+
+    browseBtn.onclick = () => fileInput.click();
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('active');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('active');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        const file = e.dataTransfer.files[0];
+        updateFileInfo(file);
+        if (e.dataTransfer.items) {
+            for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                if (e.dataTransfer.items[i].kind === 'file') {
+                    const droppedFile = e.dataTransfer.items[i].getAsFile();
+                    filePath.textContent = droppedFile.name;
+                    break;
+                }
+            }
+        }
+        handleImage(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (file) {
+            updateFileInfo(file);
+            handleImage(file);
+        }
+    });
+
+    function updateFileInfo(file) {
+        fileName.textContent = file.name;
+        filePath.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        imageInfo.style.display = 'block';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function handleImage(file) {
+        if (!file.type.match('image.*')) {
+            alert('Please upload an image file!');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            fabric.Image.fromURL(e.target.result, (img) => {
+                canvas.clear();
+                canvas.setWidth(img.width);
+                canvas.setHeight(img.height);
+                originalAspectRatio = img.width / img.height;
+                
+                img.scaleToWidth(canvas.getWidth());
+                canvas.add(img);
+                canvas.centerObject(img);
+                canvas.renderAll();
+                
+                document.getElementById('width').value = img.width;
+                document.getElementById('height').value = img.height;
+                canvasContainer.style.display = 'block';
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.getElementById('width').addEventListener('input', function() {
+        if (document.getElementById('lockAspectRatio').checked) {
+            document.getElementById('height').value = Math.round(this.value / originalAspectRatio);
+        }
+        resizeCanvas();
+    });
+
+    document.getElementById('height').addEventListener('input', function() {
+        if (document.getElementById('lockAspectRatio').checked) {
+            document.getElementById('width').value = Math.round(this.value * originalAspectRatio);
+        }
+        resizeCanvas();
+    });
+
+    function resizeCanvas() {
+        const width = parseInt(document.getElementById('width').value);
+        const height = parseInt(document.getElementById('height').value);
+        
+        if (width && height) {
+            canvas.setWidth(width);
+            canvas.setHeight(height);
+            
+            const obj = canvas.getObjects()[0];
+            if (obj) {
+                obj.scaleToWidth(width);
+                canvas.centerObject(obj);
+                canvas.renderAll();
+            }
+        }
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        const format = document.getElementById('format').value;
+        const dataURL = canvas.toDataURL({
+            format: format,
+            quality: 0.8
+        });
+        
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = `resized-image.${format}`;
+        link.click();
+    });
+});
+</script>
+</body></html>
